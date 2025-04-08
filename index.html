@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kho Kho Scoreboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Oswald', sans-serif;
+      text-align: center;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+    .scoreboard {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      width: 100%;
+      max-width: 600px;
+      margin: auto;
+      padding: 10px 0;
+    }
+    .team {
+      text-align: center;
+      margin-top: 20px;
+      min-width: 100px;
+    }
+    .team-name {
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .score {
+      font-size: 100px;
+      font-weight: bold;
+      margin: 10px 0;
+      text-align: center;
+      min-height: 100px;
+    }
+    .red { color: rgb(255, 165, 0); }
+    .blue { color: blue; }
+
+    .timer {
+      font-size: 50px;
+      font-weight: bold;
+      margin: 30px 0 5px 0;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      min-height: 60px;
+    }
+    .timer.pulse {
+      animation: pulse 1s infinite;
+      color: red;
+    }
+
+    .phase-container {
+      margin-top: 10px;
+    }
+
+    #match-phase {
+      font-size: 1.3rem;
+      font-weight: bold;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background-color: #ffe9cc;
+      border: none;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      cursor: pointer;
+      text-align: center;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    #match-phase:focus {
+      outline: none;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      opacity: 0.7;
+      margin-top: 5px;
+    }
+    .button {
+      font-size: 14px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      width: 25px;
+      height: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .button:focus {
+      outline: none;
+    }
+    .button:active {
+      background: none;
+    }
+
+    .score-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      margin-top: 15px;
+      height: 30px;
+    }
+    .score-button {
+      background: rgb(255, 165, 0);
+      color: black;
+      font-size: 9px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.7;
+    }
+    .score-button.blue {
+      background: blue;
+      color: white;
+    }
+    .reset-score {
+      background: black;
+      color: white;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .footer {
+      margin-top: 10px;
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.8);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scoreboard">
+    <div class="team">
+      <div class="team-name red" contenteditable="true">Red Team</div>
+      <div class="score red" id="scoreRed">00</div>
+    </div>
+    <div>
+      <div class="timer" id="timer" contenteditable="true" onblur="setTimer()">10:00</div>
+      <div class="phase-container">
+        <select id="match-phase">
+          <option>1st Half</option>
+          <option>2nd Half</option>
+          <option>Extra Time</option>
+          <option>Final</option>
+        </select>
+      </div>
+      <div class="controls">
+        <button class="button" onclick="startTimer()">▶</button>
+        <button class="button" onclick="pauseTimer()">⏸</button>
+      </div>
+    </div>
+    <div class="team">
+      <div class="team-name blue" contenteditable="true">Blue Team</div>
+      <div class="score blue" id="scoreBlue">00</div>
+    </div>
+  </div>
+
+  <div class="score-controls">
+    <button class="score-button red" onclick="changeScore('scoreRed', 1)">+</button>
+    <button class="score-button red" onclick="changeScore('scoreRed', -1)">-</button>
+    <button class="reset-score" onclick="resetScores()">⭯</button>
+    <button class="score-button blue" onclick="changeScore('scoreBlue', 1)">+</button>
+    <button class="score-button blue" onclick="changeScore('scoreBlue', -1)">-</button>
+  </div>
+
+  <div class="footer">All India Inter-University Kho Kho Championship</div>
+
+  <script>
+    let timerInterval;
+    let timeSet = 600;
+
+    function setTimer() {
+      clearInterval(timerInterval);
+      const timerText = document.getElementById("timer").innerText;
+      const parts = timerText.split(":");
+      if (parts.length === 2) {
+        let minutes = parseInt(parts[0]);
+        let seconds = parseInt(parts[1]);
+        if (!isNaN(minutes) && !isNaN(seconds)) {
+          timeSet = minutes * 60 + seconds;
+          updateTimerDisplay();
+        }
+      }
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (timeSet > 0) {
+          timeSet--;
+          updateTimerDisplay();
+        } else {
+          clearInterval(timerInterval);
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timerInterval);
+    }
+
+    function updateTimerDisplay() {
+      let minutes = Math.floor(timeSet / 60).toString().padStart(2, '0');
+      let seconds = (timeSet % 60).toString().padStart(2, '0');
+      const timerElement = document.getElementById("timer");
+      timerElement.innerText = `${minutes}:${seconds}`;
+
+      if (timeSet < 60) {
+        timerElement.classList.add("pulse");
+        timerElement.style.color = "red";
+      } else {
+        timerElement.classList.remove("pulse");
+        timerElement.style.color = "black";
+      }
+    }
+
+    function changeScore(team, value) {
+      const scoreElement = document.getElementById(team);
+      let currentScore = parseInt(scoreElement.innerText);
+      currentScore = Math.max(currentScore + value, 0);
+      scoreElement.innerText = currentScore.toString().padStart(2, '0');
+    }
+
+    function resetScores() {
+      document.getElementById("scoreRed").innerText = "00";
+      document.getElementById("scoreBlue").innerText = "00";
+    }
+  </script>
+</body>
+</html>
